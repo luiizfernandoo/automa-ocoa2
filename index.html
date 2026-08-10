@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1f33" />
+  <title>COA | Gerador de Mensagem OEE</title>
+  <style>
+    :root{
+      --bg:#07131f;
+      --panel:#0d2033;
+      --panel-2:#122a42;
+      --line:#24415d;
+      --text:#f5f8fb;
+      --muted:#a9b9c9;
+      --green:#36d399;
+      --green-dark:#123f34;
+      --yellow:#f7c948;
+      --red:#ff6b6b;
+      --red-dark:#4b2028;
+      --blue:#55a8ff;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(85,168,255,.16), transparent 28%),
+        linear-gradient(135deg,#06111c,#0a1a2a 50%,#07131f);
+      color:var(--text);
+    }
+    button,input,select,textarea{font:inherit}
+    .container{width:min(1180px,92%);margin:auto;padding:30px 0 60px}
+    .hero{
+      display:flex;justify-content:space-between;align-items:center;gap:20px;
+      margin-bottom:24px;
+    }
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:58px;height:58px;border-radius:18px;
+      display:grid;place-items:center;font-weight:900;font-size:22px;
+      background:linear-gradient(145deg,var(--green),#1aa777);
+      color:#062219;box-shadow:var(--shadow);
+    }
+    h1{margin:0;font-size:clamp(26px,4vw,42px)}
+    .subtitle{margin:7px 0 0;color:var(--muted);line-height:1.5}
+    .meta-badge{
+      padding:10px 14px;border:1px solid var(--line);border-radius:999px;
+      background:rgba(13,32,51,.75);color:var(--green);font-weight:700;
+      white-space:nowrap;
+    }
+    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+    .card{
+      background:rgba(13,32,51,.94);border:1px solid var(--line);
+      border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;
+      backdrop-filter:blur(10px);
+    }
+    .card h2{margin:0 0 18px;font-size:21px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .full{grid-column:1/-1}
+    label{display:block;margin-bottom:7px;color:#dbe6ef;font-size:14px;font-weight:700}
+    input,select,textarea{
+      width:100%;border:1px solid var(--line);background:#081827;color:var(--text);
+      border-radius:13px;padding:12px 13px;outline:none;transition:.2s;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(85,168,255,.12)}
+    textarea{min-height:92px;resize:vertical}
+    .section-title{
+      margin:22px 0 12px;padding-top:18px;border-top:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .section-title strong{font-size:16px}
+    .helper{font-size:12px;color:var(--muted)}
+    .factor-row{
+      display:grid;grid-template-columns:1fr 120px 42px;gap:9px;margin-bottom:9px;
+    }
+    .factor-row.positive{grid-template-columns:1fr 42px}
+    .icon-btn{
+      border:0;border-radius:11px;background:#263c51;color:#fff;cursor:pointer;
+      min-height:42px;font-weight:800;
+    }
+    .icon-btn:hover{filter:brightness(1.15)}
+    .add-btn{
+      border:1px dashed #3d617e;background:transparent;color:var(--blue);
+      padding:10px 13px;border-radius:12px;cursor:pointer;font-weight:800;
+    }
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+    .btn{
+      border:0;border-radius:13px;padding:12px 16px;cursor:pointer;font-weight:800;
+      transition:.2s;
+    }
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    .primary{background:var(--green);color:#05241a}
+    .secondary{background:#1b3853;color:#fff;border:1px solid #315471}
+    .danger{background:#43232b;color:#ffb1b1}
+    .preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .status{
+      padding:8px 11px;border-radius:999px;font-size:13px;font-weight:900;
+      background:#233b51;color:#cfe2f2;
+    }
+    .status.ok{background:var(--green-dark);color:#74efbd}
+    .status.warn{background:#44391c;color:#ffe089}
+    .status.bad{background:var(--red-dark);color:#ffacac}
+    .message{
+      white-space:pre-wrap;background:#071827;border:1px solid var(--line);
+      border-radius:16px;padding:18px;min-height:430px;line-height:1.6;
+      color:#edf6fc;overflow-wrap:anywhere;
+    }
+    .summary{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;
+    }
+    .metric{background:#0a1a2a;border:1px solid var(--line);border-radius:14px;padding:13px}
+    .metric span{display:block;color:var(--muted);font-size:12px}
+    .metric strong{display:block;margin-top:5px;font-size:20px}
+    .history{margin-top:22px}
+    .history-list{display:grid;gap:10px}
+    .history-item{
+      border:1px solid var(--line);background:#091a2a;border-radius:14px;padding:13px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .history-item small{color:var(--muted)}
+    .history-item button{border:0;background:#1b3853;color:#fff;border-radius:9px;padding:8px 10px;cursor:pointer}
+    .empty{color:var(--muted);text-align:center;padding:20px}
+    .toast{
+      position:fixed;right:20px;bottom:20px;background:#14364d;color:#fff;
+      border:1px solid #315471;border-radius:12px;padding:12px 16px;
+      opacity:0;transform:translateY(20px);pointer-events:none;transition:.25s;
+    }
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .hero{align-items:flex-start;flex-direction:column}
+      .meta-badge{white-space:normal}
+    }
+    @media(max-width:580px){
+      .form-grid{grid-template-columns:1fr}
+      .full{grid-column:auto}
+      .factor-row{grid-template-columns:1fr 92px 42px}
+      .summary{grid-template-columns:1fr}
+      .card{padding:17px}
+    }
+  
+    .impact-search-wrap{position:relative}
+    .impact-suggestions{
+      display:none;
+      margin-top:8px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:#081827;
+      max-height:240px;
+      overflow-y:auto;
+      box-shadow:0 12px 28px rgba(0,0,0,.25);
+    }
+    .impact-suggestions.show{display:block}
+    .impact-suggestion{
+      width:100%;
+      border:0;
+      border-bottom:1px solid var(--line);
+      background:transparent;
+      color:var(--text);
+      text-align:left;
+      padding:11px 13px;
+      cursor:pointer;
+    }
+    .impact-suggestion:last-child{border-bottom:0}
+    .impact-suggestion:hover{background:#10263b}
+    .impact-suggestion small{
+      display:block;
+      color:var(--muted);
+      margin-top:3px;
+      font-size:11px;
+    }
+</style>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="COA OEE" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <div class="brand">
+        <div class="logo">COA</div>
+        <div>
+          <h1>Gerador de Mensagem OEE</h1>
+          <p class="subtitle">Registre o resultado da fazenda, identifique os fatores do turno e gere uma análise pronta para envio.</p>
+        </div>
+      </div>
+      <div class="meta-badge">Meta padrão: 55% de OEE</div>
+      <button id="installAppBtn" class="btn secondary" type="button" style="display:none">
+        Instalar aplicativo
+      </button>
+
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Dados da operação</h2>
+        <div class="form-grid">
+          <div>
+            <label for="regional">Regional</label>
+            <select id="regional">
+              <option value="">Selecione</option>
+              <option>Sul</option>
+              <option>Extremo Sul</option>
+              <option>Centro</option>
+              <option>Norte</option>
+            </select>
+          </div>
+          <div>
+            <label for="fazenda">Fazenda</label>
+            <select id="fazenda" disabled>
+              <option value="">Selecione primeiro a regional</option>
+            </select>
+            <input id="fazendaOutra" placeholder="Digite o nome da fazenda" style="display:none;margin-top:9px" />
+          </div>
+          <div>
+            <label for="data">Data</label>
+            <input id="data" type="date" />
+          </div>
+          <div>
+            <label for="tipoPeriodo">Período do relatório</label>
+            <select id="tipoPeriodo">
+              <option value="dia">Referente ao dia</option>
+              <option value="semana">Acumulado da semana</option>
+              <option value="mes">Acumulado do mês</option>
+            </select>
+          </div>
+          <div>
+            <label for="turno">Turno</label>
+            <select id="turno">
+              <option>Turno 1</option>
+              <option>Turno 2</option>
+              <option>Turno 3</option>
+              <option>Consolidado do dia</option>
+            </select>
+          </div>
+          <div>
+            <label for="saudacao">Saudação</label>
+            <select id="saudacao">
+              <option value="auto">Automática</option>
+              <option value="bom dia">Bom dia</option>
+              <option value="boa tarde">Boa tarde</option>
+              <option value="boa noite">Boa noite</option>
+            </select>
+          </div>
+          <div>
+            <label for="oee">OEE da fazenda (%)</label>
+            <input id="oee" type="number" min="0" max="100" step="0.1" placeholder="Ex.: 57,8" />
+          </div>
+          <div>
+            <label for="meta">Meta de OEE (%)</label>
+            <input id="meta" type="number" min="0" max="100" step="0.1" value="55" />
+          </div>
+          <div>
+            <label for="semOperador">Sem operador (%)</label>
+            <input id="semOperador" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 13,93" />
+          </div>
+          <div>
+            <label for="refeicao">Refeição (%)</label>
+            <input id="refeicao" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 22,27" />
+          </div>
+          <div>
+            <label for="manutencoes">Manutenções (%)</label>
+            <input id="manutencoes" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 15,42" />
+          </div>
+          <div>
+            <label for="paradasGerenciais">Paradas Gerenciais (%)</label>
+            <input id="paradasGerenciais" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 15,42" />
+          </div>
+          <div>
+            <label for="deslocamentos">Deslocamentos (%)</label>
+            <input id="deslocamentos" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 8,50" />
+          </div>
+          <div>
+            <label for="horasEfetivas">Horas efetivas (%)</label>
+            <input id="horasEfetivas" type="number" min="0" max="100" step="0.01" placeholder="Ex.: 49,98" />
+          </div>
+        </div>
+
+        <div class="section-title">
+          <div>
+            <strong>Fatores positivos</strong>
+            <div class="helper">Informe o que ajudou a fazenda a alcançar o resultado.</div>
+          </div>
+          <button class="add-btn" type="button" onclick="addPositive()">+ Adicionar</button>
+        </div>
+        <div id="positiveList"></div>
+
+        <div class="section-title">
+          <div>
+            <strong>O que afetou o Sem Operador</strong>
+            <div class="helper">Selecione os motivos que contribuíram para o indicador Sem operador.</div>
+          </div>
+          <button class="add-btn" type="button" onclick="addOperatorImpact()">+ Adicionar</button>
+        </div>
+        <div id="operatorImpactList"></div>
+
+        <div class="section-title">
+          <div>
+            <strong>Impactos negativos</strong>
+            <div class="helper">Selecione a causa e, quando souber, informe a perda estimada em pontos percentuais.</div>
+          </div>
+          <button class="add-btn" type="button" onclick="addImpact()">+ Adicionar</button>
+        </div>
+        <div class="full impact-search-wrap" style="margin-bottom:12px">
+          <label for="impactSearch">Pesquisar impacto</label>
+          <input id="impactSearch" type="search" autocomplete="off" placeholder="Digite para pesquisar um impacto..." />
+          <div id="impactSuggestions" class="impact-suggestions"></div>
+        </div>
+        <div id="impactList"></div>
+
+        <div class="section-title">
+          <div>
+            <strong>Deslocamentos que impactaram</strong>
+            <div class="helper">Selecione os deslocamentos que impactaram o resultado da fazenda.</div>
+          </div>
+          <button class="add-btn" type="button" onclick="addDisplacementImpact()">+ Adicionar</button>
+        </div>
+        <div id="displacementImpactList"></div>
+
+        <div class="form-grid">
+          <div class="full">
+            <label for="observacoes">Observações complementares</label>
+            <textarea id="observacoes" placeholder="Ex.: Chuva no início do turno, baixa disponibilidade da frota, mudança de operação..."></textarea>
+          </div>
+          <div class="full">
+            <label for="acao">Ação recomendada</label>
+            <textarea id="acao" placeholder="Ex.: Atuar na recorrência das manutenções e revisar o planejamento de abastecimento."></textarea>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" onclick="generateMessage()">Gerar mensagem</button>
+          <button class="btn secondary" onclick="fillExample()">Preencher exemplo</button>
+          <button class="btn danger" onclick="clearForm()">Limpar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="preview-head">
+          <h2 style="margin:0">Mensagem gerada</h2>
+          <span id="status" class="status">Aguardando dados</span>
+        </div>
+
+        <div class="summary">
+          <div class="metric"><span>Resultado</span><strong id="metricOee">--</strong></div>
+          <div class="metric"><span>Diferença da meta</span><strong id="metricGap">--</strong></div>
+          <div class="metric"><span>Classificação</span><strong id="metricClass">--</strong></div>
+        </div>
+
+        <div id="message" class="message">Preencha os dados ao lado e clique em “Gerar mensagem”.</div>
+
+        <div class="actions">
+          <button class="btn primary" onclick="copyMessage()">Copiar mensagem</button>
+          <button class="btn secondary" onclick="sendWhatsApp()">Abrir no WhatsApp</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card history">
+      <div class="preview-head">
+        <div>
+          <h2 style="margin:0">Histórico recente</h2>
+          <p class="subtitle">As últimas mensagens ficam salvas neste dispositivo.</p>
+        </div>
+        <button class="btn danger" onclick="clearHistory()">Apagar histórico</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function getFieldValue(id){
+    const element = $(id);
+    if(!element){
+      console.error(`Campo não encontrado: #${id}`);
+      return "";
+    }
+    return String(element.value ?? "").trim();
+  }
+
+  function getNumberField(id){
+    const value = getFieldValue(id).replace(",", ".");
+    return value === "" ? null : Number(value);
+  }
+
+  let lastMessage = "";
+
+  function brNumber(value){
+    return Number(value).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+  }
+
+  function todayISO(){
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    return new Date(now.getTime() - offset*60000).toISOString().split('T')[0];
+  }
+  $('data').value = todayISO();
+
+  function addPositive(value=""){
+    const row = document.createElement('div');
+    row.className = 'factor-row positive';
+    row.innerHTML = `
+      <input class="positive-input" placeholder="Ex.: Alta disponibilidade mecânica" value="${escapeHtml(value)}">
+      <button class="icon-btn" type="button" title="Remover" onclick="this.parentElement.remove()">×</button>`;
+    $('positiveList').appendChild(row);
+  }
+
+  const impactCategories = {
+    operador: {
+      label: 'IMPACTOS DE OPERADOR',
+      items: ['FIM DE TURNO','ABSENTEÍSMO','AGUARDANDO OPERADOR AUTOMÁTICO','MÁQUINA LIBERADA','TREINAMENTO']
+    },
+    
+    gerencial: {
+      label: 'PARADAS GERENCIAIS',
+      items: [
+        'REFEIÇÃO',
+        'CLIMA',
+        'REUNIÃO',
+        'FÉRIAS',
+        'QUADRO ABERTO',
+        'CHECKLIST',
+        'AGUARDANDO ORDENS',
+        'EMERGÊNCIA',
+        'PARADA FÍSICA',
+        'AQUECIMENTO DO MOTOR',
+        'LIMPEZA',
+        'LIMPEZA DE MÁQUINA E EQUIPAMENTO',
+        'REGULAGEM DE IMPLEMENTO',
+        'TROCA DE IMPLEMENTO',
+        'ABASTECIMENTO/LUBRIFICAÇÃO',
+        'AGUARDANDO ABASTECIMENTO',
+        'ABASTECENDO PRODUTO',
+        'CARGA E DESCARGA DE CARRETA',
+        'RETIRADA DE OBSTÁCULOS',
+        'MÁQUINA ENCALHADA',
+        'MÁQUINA ENCALHADA',
+        'LIMPEZA DE BICOS'
+      ]
+    },
+    deslocamento: {
+      label: 'DESLOCAMENTOS',
+      items: ['DESLOCAMENTO PARA MANUTENÇÃO','DESLOCAMENTO PARA ABASTECIMENTO','DESLOCAMENTO']
+    },
+    manutencao: {
+      label: 'PARADAS DE MANUTENÇÃO',
+      items: [
+        'AGUARDANDO MANUTENÇÃO','AGUARDANDO ABASTECIMENTO DIESEL','OFICINA',
+        'LAVANDO MÁQUINA/EQUIPAMENTO','MANUTENÇÃO EM CAMPO','MANUTENÇÃO IMPLEMENTO',
+        'MANUTENÇÃO OFICINA','MANUTENÇÃO PREVENTIVA','TESTE DE OFICINA',
+        'MANUTENÇÃO EXTERNA','SINISTRO','AGUARDANDO PEÇAS','AJUSTE TECNOLOGIA'
+      ]
+    }
+  };
+
+  function getImpactCategory(name){
+    return Object.keys(impactCategories).find(key => impactCategories[key].items.includes(name)) || 'outros';
+  }
+
+  function groupImpacts(impacts){
+    return impacts.reduce((groups, item) => {
+      const category = getImpactCategory(item.name);
+      if(!groups[category]) groups[category] = [];
+      groups[category].push(item);
+      return groups;
+    }, {});
+  }
+
+  function buildImpactOptions(selected='', query=''){
+    const busca = query.trim().toLocaleUpperCase('pt-BR');
+    const grupos = Object.values(impactCategories).map(category => {
+      const itens = category.items.filter(item =>
+        !busca || item.toLocaleUpperCase('pt-BR').includes(busca)
+      );
+      if(!itens.length) return '';
+      const options = itens.map(item =>
+        `<option value="${escapeHtml(item)}" ${item === selected ? 'selected' : ''}>${escapeHtml(item)}</option>`
+      ).join('');
+      return `<optgroup label="${escapeHtml(category.label)}">${options}</optgroup>`;
+    }).join('');
+    return `<option value="">Selecione a causa do impacto</option>${grupos}`;
+  }
+
+  function addImpact(name="", loss=""){
+    const row = document.createElement('div');
+    row.className = 'factor-row';
+    row.innerHTML = `
+      <select class="impact-name" aria-label="Causa do impacto">
+        ${buildImpactOptions(name, $('impactSearch')?.value || '')}
+      </select>
+      <input class="impact-loss" type="number" min="0" step="0.1" placeholder="Ordem" value="${escapeHtml(loss)}">
+      <button class="icon-btn" type="button" title="Remover" onclick="this.parentElement.remove()">×</button>`;
+    $('impactList').appendChild(row);
+  }
+
+  function getAllImpactItems(){
+    return Object.values(impactCategories).flatMap(category =>
+      category.items.map(item => ({item, category: category.label}))
+    );
+  }
+
+  function renderImpactSuggestions(){
+    const query = $('impactSearch').value.trim().toLocaleUpperCase('pt-BR');
+    const box = $('impactSuggestions');
+
+    if(!query){
+      box.innerHTML = '';
+      box.classList.remove('show');
+      return;
+    }
+
+    const results = getAllImpactItems()
+      .filter(entry => entry.item.toLocaleUpperCase('pt-BR').includes(query))
+      .slice(0, 12);
+
+    if(!results.length){
+      box.innerHTML = '<div style="padding:12px;color:var(--muted)">Nenhuma opção encontrada.</div>';
+      box.classList.add('show');
+      return;
+    }
+
+    box.innerHTML = results.map(entry => `
+      <button type="button" class="impact-suggestion" onclick="selectImpactSuggestion('${entry.item.replace(/'/g, "\'")}')">
+        ${escapeHtml(entry.item)}
+        <small>${escapeHtml(entry.category)}</small>
+      </button>
+    `).join('');
+
+    box.classList.add('show');
+  }
+
+  function selectImpactSuggestion(item){
+    const selects = [...document.querySelectorAll('.impact-name')];
+    let target = selects.find(select => !select.value);
+
+    if(!target){
+      addImpact();
+      target = [...document.querySelectorAll('.impact-name')].at(-1);
+    }
+
+    // Altera apenas o campo vazio escolhido.
+    // Os impactos anteriores continuam selecionados.
+    target.innerHTML = buildImpactOptions(item, '');
+    target.value = item;
+
+    $('impactSearch').value = '';
+    $('impactSuggestions').innerHTML = '';
+    $('impactSuggestions').classList.remove('show');
+  }
+
+  function refreshImpactSelects(){
+    document.querySelectorAll('.impact-name').forEach(select => {
+      const atual = select.value;
+      select.innerHTML = buildImpactOptions(atual, '');
+      select.value = atual;
+    });
+  }
+
+  const operatorImpactOptions = [
+    'FIM DE TURNO',
+    'ABSENTEÍSMO',
+    'AGUARDANDO OPERADOR AUTOMÁTICO',
+    'MÁQUINA LIBERADA',
+    'TREINAMENTO'
+  ];
+
+  function addOperatorImpact(selected=''){
+    const row = document.createElement('div');
+    row.className = 'factor-row positive';
+    row.innerHTML = `
+      <select class="operator-impact" aria-label="Impacto de operador">
+        <option value="">Selecione o motivo</option>
+        ${operatorImpactOptions.map(item =>
+          `<option value="${escapeHtml(item)}" ${item === selected ? 'selected' : ''}>${escapeHtml(item)}</option>`
+        ).join('')}
+      </select>
+      <button class="icon-btn" type="button" title="Remover" onclick="this.parentElement.remove()">×</button>`;
+    $('operatorImpactList').appendChild(row);
+  }
+
+  function collectOperatorImpacts(){
+    return [...document.querySelectorAll('.operator-impact')]
+      .map(select => select.value.trim())
+      .filter(Boolean);
+  }
+
+  function addDisplacementImpact(value=""){
+    const row = document.createElement('div');
+    row.className = 'factor-row positive';
+    row.innerHTML = `
+      <select class="displacement-impact" aria-label="Deslocamento que impactou">
+        <option value="">Selecione o deslocamento</option>
+        <option value="DESLOCAMENTO PARA MANUTENÇÃO" ${value === 'DESLOCAMENTO PARA MANUTENÇÃO' ? 'selected' : ''}>DESLOCAMENTO PARA MANUTENÇÃO</option>
+        <option value="DESLOCAMENTO PARA ABASTECIMENTO" ${value === 'DESLOCAMENTO PARA ABASTECIMENTO' ? 'selected' : ''}>DESLOCAMENTO PARA ABASTECIMENTO</option>
+      </select>
+      <button class="icon-btn" type="button" title="Remover" onclick="this.parentElement.remove()">×</button>`;
+    $('displacementImpactList').appendChild(row);
+  }
+
+  function collectDisplacementImpacts(){
+    return [...document.querySelectorAll('.displacement-impact')]
+      .map(el => el.value.trim())
+      .filter(Boolean);
+  }
+
+  function escapeHtml(text){
+    return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  addPositive();
+  addOperatorImpact();
+  addImpact();
+  addDisplacementImpact();
+  $('impactSearch').addEventListener('input', () => {
+    renderImpactSuggestions();
+  });
+
+  document.addEventListener('click', event => {
+    if(!event.target.closest('.impact-search-wrap')){
+      $('impactSuggestions').classList.remove('show');
+    }
+  });
+
+  function collectValues(selector){
+    return [...document.querySelectorAll(selector)]
+      .map(el => el.value.trim())
+      .filter(Boolean);
+  }
+
+  function collectImpacts(){
+    return [...document.querySelectorAll('.factor-row')]
+      .map(row => {
+        const name = row.querySelector('.impact-name');
+        const loss = row.querySelector('.impact-loss');
+        if(!name) return null;
+        return {name:name.value.trim(), loss:loss.value.trim()};
+      })
+      .filter(item => item && item.name)
+      .sort((a,b)=>(Number(b.loss)||0)-(Number(a.loss)||0));
+  }
+
+  function formatDate(date){
+    if(!date) return "";
+    const [y,m,d] = date.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function getPeriodoTexto(tipoPeriodo, data){
+    const dataFormatada = formatDate(data);
+
+    if(tipoPeriodo === 'semana'){
+  return `no acumulado da semana anterior`;
+}
+
+    if(tipoPeriodo === 'mes'){
+      const [ano, mes] = data.split('-');
+      const nomesMeses = [
+        'janeiro', 'fevereiro', 'março', 'abril',
+        'maio', 'junho', 'julho', 'agosto',
+        'setembro', 'outubro', 'novembro', 'dezembro'
+      ];
+      return `no acumulado do mês de ${nomesMeses[Number(mes) - 1]} de ${ano}`;
+    }
+
+    return `referente ao dia ${dataFormatada}`;
+  }
+
+  function classify(oee, meta){
+    if(oee >= meta + 5) return {label:'Destaque', status:'ok', emoji:'\u{1F7E2}'};
+    if(oee >= meta) return {label:'Meta atingida', status:'ok', emoji:'\u{2705}'};
+    if(oee >= meta - 5) return {label:'Atenção', status:'warn', emoji:'\u{1F7E1}'};
+    return {label:'Crítico', status:'bad', emoji:'\u{1F534}'};
+  }
+
+  const fazendasPorRegional = {
+    'Sul': ['Rio Pardo', 'Palmeiras', 'Santa Teresinha', 'Rancho Grande', 'Tubunas'],
+    'Extremo Sul': ['Monte Verde', 'Umuarana', 'Redenção', 'Quatrirmas', 'Água Sumida', 'Graminha', 'Santa Monica'],
+    'Centro': ['Nova Trento', 'Nova Era',   'Entre Rios','São Carlos/Maringá', 'Ventura',  'Oriçanga', 'Emu'],
+    'Norte': ['Constância', 'São João', 'São Vicente', 'Califórnia', 'Muriti', 'Rio Cortado', 'Água Boa']
+  };
+
+  function atualizarFazendas(fazendaSelecionada=''){
+    const regionalSelect = document.getElementById('regional');
+    const fazendaSelect = document.getElementById('fazenda');
+    const manual = document.getElementById('fazendaOutra');
+
+    if(!regionalSelect || !fazendaSelect) return;
+
+    const regional = regionalSelect.value;
+    const lista = fazendasPorRegional[regional] || [];
+
+    fazendaSelect.innerHTML = '';
+
+    if(manual){
+      manual.style.display = 'none';
+      manual.value = '';
+    }
+
+    if(!regional){
+      fazendaSelect.disabled = true;
+      fazendaSelect.innerHTML = '<option value="">Selecione primeiro a regional</option>';
+      return;
+    }
+
+    fazendaSelect.disabled = false;
+
+    const inicial = document.createElement('option');
+    inicial.value = '';
+    inicial.textContent = 'Selecione a fazenda';
+    fazendaSelect.appendChild(inicial);
+
+    lista.forEach(nome => {
+      const option = document.createElement('option');
+      option.value = nome;
+      option.textContent = nome;
+      fazendaSelect.appendChild(option);
+    });
+
+    const outra = document.createElement('option');
+    outra.value = '__outra__';
+    outra.textContent = 'Outra fazenda';
+    fazendaSelect.appendChild(outra);
+
+    if(fazendaSelecionada){
+      if(lista.includes(fazendaSelecionada)){
+        fazendaSelect.value = fazendaSelecionada;
+      }else{
+        fazendaSelect.value = '__outra__';
+        if(manual){
+          manual.style.display = 'block';
+          manual.value = fazendaSelecionada;
+        }
+      }
+    }
+  }
+
+  function atualizarCampoOutraFazenda(){
+    const manual = $('fazendaOutra');
+    const outraSelecionada = $('fazenda').value === '__outra__';
+    manual.style.display = outraSelecionada ? 'block' : 'none';
+    if(outraSelecionada) manual.focus();
+    else manual.value = '';
+  }
+
+  function obterFazenda(){
+    const fazendaSelecionada = getFieldValue('fazenda');
+    return fazendaSelecionada === '__outra__'
+      ? getFieldValue('fazendaOutra')
+      : fazendaSelecionada;
+  }
+
+  const regionalElement = document.getElementById('regional');
+  if(regionalElement){
+    regionalElement.addEventListener('change', function(){
+      atualizarFazendas();
+    });
+  }
+  $('fazenda').addEventListener('change', atualizarCampoOutraFazenda);
+  atualizarFazendas();
+
+  function generateMessage(save=true){
+    const regional = getFieldValue('regional');
+    const fazenda = obterFazenda();
+    const data = getFieldValue('data');
+    const tipoPeriodo = getFieldValue('tipoPeriodo');
+    const periodoTexto = getPeriodoTexto(tipoPeriodo, data);
+    const turno = getFieldValue('turno');
+    const modelo = 'turno';
+    const saudacaoSelecionada = getFieldValue('saudacao');
+    const horaAtual = new Date().getHours();
+    const saudacao = saudacaoSelecionada === 'auto'
+      ? (horaAtual < 12 ? 'bom dia' : horaAtual < 18 ? 'boa tarde' : 'boa noite')
+      : (saudacaoSelecionada || 'bom dia');
+
+    const oee = getNumberField('oee');
+    const meta = getNumberField('meta');
+    const semOperador = getNumberField('semOperador');
+    const refeicao = getNumberField('refeicao');
+    const manutencoes = getNumberField('manutencoes');
+    const paradasAdministrativas = getNumberField('paradasGerenciais');
+    const paradasGerenciais = getNumberField('paradasGerenciais');
+    const deslocamentos = getNumberField('deslocamentos');
+    const horasEfetivas = getNumberField('horasEfetivas');
+    const positives = collectValues('.positive-input');
+    const selectedOperatorImpacts = collectOperatorImpacts();
+    const impacts = collectImpacts();
+    const selectedDisplacements = collectDisplacementImpacts();
+    const obs = $('observacoes').value.trim();
+    const action = $('acao').value.trim();
+
+    if(!regional || !fazenda || !data || oee === null || meta === null || Number.isNaN(oee) || Number.isNaN(meta)){
+      toast('Preencha regional, fazenda, data, OEE e meta.');
+      return;
+    }
+
+    const result = classify(oee,meta);
+    const gap = oee-meta;
+    const lines = [];
+
+    if(modelo === 'turno'){
+      lines.push(`Pessoal, ${saudacao}!`);
+      lines.push(`Segue o relatório do *OEE* do ${turno.toLowerCase()} ${periodoTexto}, destacando os principais pontos que impactaram o resultado da fazenda.`);
+      lines.push('');
+      lines.push(`*OEE ${turno.toUpperCase()} - ${oee >= meta ? '✅' : '❌'} ${brNumber(oee)}% ${oee >= meta ? '✅' : '❌'}*`);
+      if(oee < meta){
+        lines.push(`*FALTARAM ${brNumber(meta - oee)}% PARA ATINGIR A META DE ${brNumber(meta)}%.*`);
+      } else if(oee > meta){
+        lines.push(`*A META FOI SUPERADA EM ${brNumber(oee - meta)}%.*`);
+      } else {
+        lines.push(`*A META DE ${brNumber(meta)}% FOI ATINGIDA.*`);
+      }
+      lines.push('');
+      lines.push('⚠️ *PONTOS QUE NECESSITAM DE UMA ATENÇÃO MAIOR* ⚠️');
+
+      const groupedImpacts = groupImpacts(impacts);
+      const operatorImpacts = [
+        ...(groupedImpacts.operador || []).map(item => item.name),
+        ...selectedOperatorImpacts
+      ].filter((name, index, array) => array.indexOf(name) === index);
+      const administrativeImpacts = (groupedImpacts.administrativo || [])
+        .filter(i => i.name !== 'REFEIÇÃO');
+      const managerialImpacts = groupedImpacts.gerencial || [];
+      const displacementImpacts = [
+        ...(groupedImpacts.deslocamento || []).map(item => item.name),
+        ...selectedDisplacements
+      ].filter((name, index, array) => array.indexOf(name) === index);
+      const maintenanceImpacts = groupedImpacts.manutencao || [];
+
+      if(semOperador !== null && !Number.isNaN(semOperador)){
+        lines.push('');
+        lines.push(`*${brNumber(semOperador)}% SEM OPERADOR*`);
+        if(operatorImpacts.length){
+          lines.push('*O QUE AFETOU O SEM OPERADOR:*');
+          operatorImpacts.slice(0,5).forEach((item,index) => {
+            lines.push(`${index + 1} - ${item}`);
+          });
+        }
+      }
+
+      if(refeicao !== null && !Number.isNaN(refeicao)){
+        lines.push('');
+        lines.push(`*${brNumber(refeicao)}% REFEIÇÃO*`);
+      }
+
+      if(administrativeImpacts.length){
+        lines.push('');
+        if(paradasAdministrativas !== null && !Number.isNaN(paradasAdministrativas)){
+          lines.push(`*${brNumber(paradasAdministrativas)}% PARADAS GERENCIAIS*`);
+        }
+        lines.push('*PARADAS GERENCIAIS QUE MAIS IMPACTARAM:*');
+        administrativeImpacts.slice(0,5).forEach((item,index) => {
+          lines.push(`${index + 1} - ${item.name}`);
+        });
+      }
+
+      if(managerialImpacts.length){
+        lines.push('');
+        if(paradasGerenciais !== null && !Number.isNaN(paradasGerenciais)){
+          lines.push(`*${brNumber(paradasGerenciais)}% PARADAS GERENCIAIS*`);
+        }
+        lines.push('*PARADAS GERENCIAIS QUE MAIS IMPACTARAM:*');
+        managerialImpacts.slice(0,5).forEach((item,index) => {
+          lines.push(`${index + 1} - ${item.name}`);
+        });
+      }
+
+      if(displacementImpacts.length){
+        lines.push('');
+        if(deslocamentos !== null && !Number.isNaN(deslocamentos)){
+          lines.push(`*${brNumber(deslocamentos)}% DESLOCAMENTOS*`);
+        }
+        lines.push('*DESLOCAMENTOS QUE MAIS IMPACTARAM:*');
+        displacementImpacts.slice(0,5).forEach((item,index) => {
+          lines.push(`${index + 1} - ${item}`);
+        });
+      }
+
+      if(maintenanceImpacts.length){
+        lines.push('');
+        if(manutencoes !== null && !Number.isNaN(manutencoes)){
+          lines.push(`*${brNumber(manutencoes)}% MANUTENÇÕES*`);
+        }
+        lines.push('*MANUTENÇÕES QUE MAIS IMPACTARAM:*');
+        maintenanceImpacts.slice(0,5).forEach((item,index) => {
+          lines.push(`${index + 1} - ${item.name}`);
+        });
+      }
+
+      if(obs){
+        lines.push('');
+        lines.push(`*OBSERVAÇÕES:* ${obs}`);
+      }
+      if(action){
+        lines.push('');
+        lines.push(`*AÇÃO RECOMENDADA:* ${action}`);
+      }
+      if(horasEfetivas !== null && !Number.isNaN(horasEfetivas)){
+        lines.push('');
+        lines.push(`*HORAS EFETIVAS:* ${brNumber(horasEfetivas)}%`);
+      }
+    } else {
+      lines.push('📊 *BOLETIM OEE – COA*');
+      lines.push('');
+      lines.push(`📍 *Regional:* ${regional}`);
+      lines.push(`🌱 *Fazenda:* ${fazenda}`);
+      lines.push(`📅 *Data:* ${formatDate(data)}`);
+      lines.push(`🕒 *Período:* ${turno}`);
+      lines.push('');
+      lines.push(`${result.emoji} *OEE: ${brNumber(oee)}%*`);
+      lines.push(`🎯 *Meta: ${brNumber(meta)}%*`);
+      lines.push(`${gap >= 0 ? '📈' : '📉'} *Diferença da meta: ${gap >= 0 ? '+' : ''}${brNumber(gap)} p.p.*`);
+      lines.push('');
+      if(oee >= meta){
+        lines.push('✅ *PONTOS QUE NECESSITAM DE UMA ATENÇÃO MAIOR.*');
+        if(positives.length){
+          lines.push('');
+          lines.push('*Principais fatores positivos:*');
+          positives.forEach(p => lines.push(`• ${p}`));
+        }
+      } else {
+        lines.push('⚠️ *PONTOS QUE NECESSITAM DE UMA ATENÇÃO MAIOR* ⚠️*');
+      }
+      if(impacts.length){
+        lines.push('');
+        lines.push('*Principais impactos identificados:*');
+        impacts.forEach(i => lines.push(`• ${i.name}${i.loss ? ` – impacto estimado de ${brNumber(i.loss)} p.p.` : ''}`));
+      }
+      if(obs){
+        lines.push('');
+        lines.push(`📝 *Observações:* ${obs}`);
+      }
+      if(action){
+        lines.push('');
+        lines.push(`🎯 *Ação recomendada:* ${action}`);
+      }
+      lines.push('');
+      lines.push('_COA – Transformando dados em direcionamento operacional._');
+    }
+
+    lastMessage = lines.join('\n');
+    $('message').textContent = lastMessage;
+    $('status').textContent = result.label;
+    $('status').className = `status ${result.status}`;
+    $('metricOee').textContent = `${brNumber(oee)}%`;
+    $('metricGap').textContent = `${gap >= 0 ? '+' : ''}${brNumber(gap)} p.p.`;
+    $('metricClass').textContent = result.label;
+
+    if(save){
+      saveHistory({regional,fazenda,data,oee,meta,message:lastMessage});
+      toast('Mensagem gerada com sucesso.');
+    }
+  }
+
+  function copyMessage(){
+    if(!lastMessage){ toast('Gere uma mensagem primeiro.'); return; }
+    navigator.clipboard.writeText(lastMessage)
+      .then(()=>toast('Mensagem copiada.'))
+      .catch(()=>fallbackCopy());
+  }
+
+  function fallbackCopy(){
+    const ta=document.createElement('textarea');
+    ta.value=lastMessage;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');ta.remove();toast('Mensagem copiada.');
+  }
+
+  function sendWhatsApp(){
+    if(!lastMessage){ toast('Gere uma mensagem primeiro.'); return; }
+    const safeMessage = lastMessage.normalize('NFC');
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(safeMessage)}`;
+    window.open(whatsappUrl,'_blank','noopener,noreferrer');
+  }
+
+  function downloadTxt(){
+    if(!lastMessage){ toast('Gere uma mensagem primeiro.'); return; }
+    const blob = new Blob([lastMessage],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`boletim-oee-${(obterFazenda()||'fazenda').toLowerCase().replace(/\s+/g,'-')}.txt`;
+    a.click();URL.revokeObjectURL(url);
+  }
+
+  function fillExample(){
+    $('regional').value='Sul';
+    atualizarFazendas('Palmeiras');
+    $('saudacao').value='bom dia';
+    $('tipoPeriodo').value='dia';
+    $('turno').value='Turno 1';
+
+    $('oee').value='50';
+    $('meta').value='55';
+    $('semOperador').value='13.93';
+    $('refeicao').value='22.27';
+    $('manutencoes').value='15.42';
+    $('paradasGerenciais').value='13.93';
+    $('paradasGerenciais').value='10.50';
+    $('deslocamentos').value='8.50';
+    $('horasEfetivas').value='49.98';
+    $('positiveList').innerHTML='';
+    addPositive();
+    $('operatorImpactList').innerHTML='';
+    addOperatorImpact('FIM DE TURNO');
+    addOperatorImpact('ABSENTEÍSMO');
+    $('impactList').innerHTML='';
+    addImpact('FIM DE TURNO','13.93');
+    addImpact('MANUTENÇÃO OFICINA','5');
+    addImpact('MANUTENÇÃO IMPLEMENTO','4');
+    addImpact('SINISTRO','3');
+    addImpact('MANUTENÇÃO PREVENTIVA','2');
+    addImpact('LAVANDO MÁQUINA/EQUIPAMENTO','1');
+    $('displacementImpactList').innerHTML='';
+    addDisplacementImpact('DESLOCAMENTO PARA MANUTENÇÃO');
+    $('observacoes').value='';
+    $('acao').value='';
+    generateMessage();
+  }
+
+  function clearForm(){
+    ['oee','semOperador','refeicao','manutencoes','paradasGerenciais','deslocamentos','horasEfetivas','observacoes','acao','fazendaOutra'].forEach(id=>$(id).value='');
+    $('regional').value='';
+    atualizarFazendas();
+    $('meta').value='55';
+    $('turno').value='Consolidado do dia';
+    $('saudacao').value='auto';
+    $('tipoPeriodo').value='dia';
+    $('data').value=todayISO();
+    $('positiveList').innerHTML=''; addPositive();
+    $('operatorImpactList').innerHTML=''; addOperatorImpact();
+    $('impactSearch').value='';
+    $('impactSuggestions').innerHTML='';
+    $('impactSuggestions').classList.remove('show');
+    $('impactList').innerHTML=''; addImpact();
+    $('displacementImpactList').innerHTML=''; addDisplacementImpact();
+    lastMessage='';
+    $('message').textContent='Preencha os dados ao lado e clique em “Gerar mensagem”.';
+    $('status').textContent='Aguardando dados';
+    $('status').className='status';
+    $('metricOee').textContent=$('metricGap').textContent=$('metricClass').textContent='--';
+  }
+
+  function getHistory(){
+    try{return JSON.parse(localStorage.getItem('coa_oee_history')||'[]')}catch{return[]}
+  }
+
+  function saveHistory(item){
+    const history=getHistory();
+    history.unshift({...item,id:Date.now()});
+    localStorage.setItem('coa_oee_history',JSON.stringify(history.slice(0,12)));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const history=getHistory();
+    const box=$('historyList');
+    if(!history.length){box.innerHTML='<div class="empty">Nenhuma mensagem salva ainda.</div>';return}
+    box.innerHTML=history.map(item=>`
+      <div class="history-item">
+        <div>
+          <strong>${escapeHtml(item.fazenda)} – ${brNumber(item.oee)}%</strong><br>
+          <small>${escapeHtml(item.regional)} • ${formatDate(item.data)}</small>
+        </div>
+        <button onclick="loadHistory(${item.id})">Abrir</button>
+      </div>`).join('');
+  }
+
+  function loadHistory(id){
+    const item=getHistory().find(x=>x.id===id);
+    if(!item)return;
+    lastMessage=item.message;
+    $('message').textContent=lastMessage;
+    const result=classify(item.oee,item.meta);
+    const gap=item.oee-item.meta;
+    $('status').textContent=result.label;
+    $('status').className=`status ${result.status}`;
+    $('metricOee').textContent=`${brNumber(item.oee)}%`;
+    $('metricGap').textContent=`${gap>=0?'+':''}${brNumber(gap)} p.p.`;
+    $('metricClass').textContent=result.label;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function clearHistory(){
+    localStorage.removeItem('coa_oee_history');
+    renderHistory();
+    toast('Histórico apagado.');
+  }
+
+  function toast(text){
+    const el=$('toast');el.textContent=text;el.classList.add('show');
+    clearTimeout(window.toastTimer);
+    window.toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+  }
+
+  renderHistory();
+
+  // ===== PWA / Instalação =====
+  let deferredInstallPrompt = null;
+  const installAppBtn = document.getElementById('installAppBtn');
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    if(installAppBtn) installAppBtn.style.display = 'inline-block';
+  });
+
+  if(installAppBtn){
+    installAppBtn.addEventListener('click', async () => {
+      if(!deferredInstallPrompt){
+        toast('No celular, use o menu do navegador e escolha "Adicionar à tela inicial".');
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installAppBtn.style.display = 'none';
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    if(installAppBtn) installAppBtn.style.display = 'none';
+    toast('Aplicativo instalado com sucesso.');
+  });
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch(error => console.error('Erro ao registrar Service Worker:', error));
+    });
+  }
+
+</script>
+</body>
+</html>
